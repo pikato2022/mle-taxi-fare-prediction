@@ -125,7 +125,7 @@ steps:
   - 'TFX_IMAGE_URI=gcr.io/$PROJECT_ID/tfx-chicago-taxi:latest'
 #  - 'BEAM_RUNNER=$_BEAM_RUNNER'
   - 'TRAINING_RUNNER=$_TRAINING_RUNNER'
-  id: 'Compile Pipeline'
+  id: 'Run Pipeline'
 #  waitFor: ['Local Test E2E Pipeline']
   waitFor: ['Upload Pipeline to GCS']
 # Push TFX Image to Container Registy.
