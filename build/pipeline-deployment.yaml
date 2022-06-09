@@ -73,14 +73,14 @@ steps:
 #
 # Build the image that encapsulates the pipeline.
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', '$_TFX_IMAGE_URI', '.']
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/tfx-chicago-taxi:latest', '.']
   dir: 'mle-taxi-fare-prediction'
   id: 'Build TFX Image'
 #  waitFor: ['Local Test E2E Pipeline']
   waitFor: ['Clone Repository']
-  
+
 # Compile the pipeline.
-- name: '$_CICD_IMAGE_URI'
+- name: 'gcr.io/$PROJECT_ID/cicd:lastest'
   entrypoint: 'python'
   args: ['build/utils.py',
           '--mode', 'compile-pipeline',
@@ -93,7 +93,7 @@ steps:
   - 'MODEL_DISPLAY_NAME=$_MODEL_DISPLAY_NAME'
   - 'DATASET_DISPLAY_NAME=$_DATASET_DISPLAY_NAME'  
   - 'GCS_LOCATION=$_GCS_LOCATION' 
-  - 'TFX_IMAGE_URI=$_TFX_IMAGE_URI' 
+  - 'TFX_IMAGE_URI=gcr.io/$PROJECT_ID/tfx-chicago-taxi:latest'
 #  - 'BEAM_RUNNER=$_BEAM_RUNNER'
   - 'TRAINING_RUNNER=$_TRAINING_RUNNER'
   id: 'Compile Pipeline'
@@ -109,7 +109,7 @@ steps:
   waitFor: ['Compile Pipeline']
   
 # Run pipeline in VertexAI.
-- name: '$_CICD_IMAGE_URI'
+- name: 'gcr.io/$PROJECT_ID/cicd:lastest'
   entrypoint: 'python'
   args: ['build/utils.py',
           '--mode', 'run-pipeline',
@@ -122,11 +122,11 @@ steps:
   - 'MODEL_DISPLAY_NAME=$_MODEL_DISPLAY_NAME'
   - 'DATASET_DISPLAY_NAME=$_DATASET_DISPLAY_NAME'
   - 'GCS_LOCATION=$_GCS_LOCATION'
-  - 'TFX_IMAGE_URI=$_TFX_IMAGE_URI'
+  - 'TFX_IMAGE_URI=gcr.io/$PROJECT_ID/tfx-chicago-taxi:latest'
 #  - 'BEAM_RUNNER=$_BEAM_RUNNER'
   - 'TRAINING_RUNNER=$_TRAINING_RUNNER'
   id: 'Compile Pipeline'
 #  waitFor: ['Local Test E2E Pipeline']
   waitFor: ['Upload Pipeline to GCS']
 # Push TFX Image to Container Registy.
-images: ['$_TFX_IMAGE_URI']
+images: ['gcr.io/$PROJECT_ID/tfx-chicago-taxi:latest']
