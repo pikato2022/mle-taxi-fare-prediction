@@ -66,7 +66,6 @@ def compile_pipeline(pl):
 def run_pipeline(pl):
     from google.cloud import aiplatform
     from google.cloud.aiplatform import pipeline_jobs
-    import os
     PIPELINE_DEFINITION_FILE = pl + '_pipeline.json'
     aiplatform.init(project=config.GOOGLE_CLOUD_PROJECT, location=config.GOOGLE_CLOUD_REGION)
 

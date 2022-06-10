@@ -29,7 +29,7 @@ steps:
 
 # Build the image that encapsulates the pipeline.
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/$PROJECT_ID/tfx-chicago-taxi:latest', '.']
+  args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/tfx-chicago-taxi:tag1', '.']
   dir: 'mle-taxi-fare-prediction'
   id: 'Build TFX Image'
   waitFor: ['Clone Repository']
@@ -44,7 +44,7 @@ steps:
 
 # build cicd image
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/$PROJECT_ID/cicd:latest', 'build/.']
+  args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/cicd:latest', 'build/.']
   dir: 'mle-taxi-fare-prediction'
   id: 'Build cicd image'
   waitFor: ['Upload trainer to GCS']
@@ -60,7 +60,7 @@ steps:
   - 'PROJECT=$PROJECT_ID'
   - 'REGION=us-central1'
   - 'GCS_LOCATION=gs://$PROJECT_ID'
-  - 'TFX_IMAGE_URI=us-central1-docker.pkg.dev/$PROJECT_ID/$PROJECT_ID/tfx-chicago-taxi:latest'
+  - 'TFX_IMAGE_URI=us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/tfx-chicago-taxi:tag1'
   id: 'Compile Pipeline'
 #  waitFor: ['Local Test E2E Pipeline']
   waitFor: ['Build cicd image']
@@ -89,5 +89,6 @@ steps:
   id: 'Run Pipeline'
   waitFor: ['Upload Pipeline to GCS']
 # Push TFX Image to Container Registy.
-images: ['us-central1-docker.pkg.dev/$PROJECT_ID/$PROJECT_ID/tfx-chicago-taxi:latest']
+images:
+- 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/tfx-chicago-taxi:tag1'
 timeout: 720s
