@@ -34,11 +34,14 @@ steps:
   id: 'Build TFX Image'
   waitFor: ['Clone Repository']
 
+
 - name: 'gcr.io/cloud-builders/gsutil'
   args: ['cp', 'src/pipeline/trainer.py', 'gs://$PROJECT_ID/pipeline_module/chicago-vertex-pipelines/trainer.py']
   dir: 'mle-taxi-fare-prediction'
   id:  'Upload trainer to GCS'
   waitFor: ['Build TFX Image']
+
+
 # build cicd image
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/$PROJECT_ID/cicd:latest', 'build/.']
@@ -69,7 +72,7 @@ steps:
   dir: 'mle-taxi-fare-prediction'
   id:  'Upload Pipeline to GCS'
   waitFor: ['Compile Pipeline']
-  
+
 # Run pipeline in VertexAI.
 - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/$PROJECT_ID/cicd:latest'
   entrypoint: 'python'
@@ -87,3 +90,4 @@ steps:
   waitFor: ['Upload Pipeline to GCS']
 # Push TFX Image to Container Registy.
 images: ['us-central1-docker.pkg.dev/$PROJECT_ID/$PROJECT_ID/tfx-chicago-taxi:latest']
+timeout: 1000s
