@@ -90,4 +90,4 @@ steps:
   waitFor: ['Upload Pipeline to GCS']
 # Push TFX Image to Container Registy.
 images: ['us-central1-docker.pkg.dev/$PROJECT_ID/$PROJECT_ID/tfx-chicago-taxi:latest']
-timeout: 1000s
+timeout: 720s
