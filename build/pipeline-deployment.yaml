@@ -91,4 +91,4 @@ steps:
 # Push TFX Image to Container Registy.
 images:
 - 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/tfx-chicago-taxi:tag1'
-timeout: 720s
+timeout: 800s
