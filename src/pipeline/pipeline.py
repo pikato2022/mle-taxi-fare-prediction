@@ -1,7 +1,7 @@
 # Copied from https://www.tensorflow.org/tfx/tutorials/tfx/penguin_simple and
 # slightly modified because we don't need `metadata_path` argument.
 from tfx import v1 as tfx
-import config
+from src.pipeline import config
 
 _trainer_module_file = 'trainer.py'
 
@@ -44,7 +44,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
 def compile_pipeline(PIPELINE_NAME):
     print("hello there")
     import os
-    import config
+    # import config
     PIPELINE_DEFINITION_FILE = PIPELINE_NAME + '_pipeline.json'
 
     runner = tfx.orchestration.experimental.KubeflowV2DagRunner(
@@ -69,3 +69,4 @@ def run_pipeline(PIPELINE_NAME):
     job = pipeline_jobs.PipelineJob(template_path=PIPELINE_DEFINITION_FILE,
                                     display_name=PIPELINE_NAME)
     job.run(sync=False)
+    return "success"
