@@ -116,13 +116,13 @@ def deploy_model(project, region, endpoint_display_name, model_display_name, ser
 
 
 def compile_pipeline(pipeline_name):
-    from src import pipeline
+    from src.pipeline import pipeline
     pipeline_definition_file = f"{pipeline_name}_pipeline.json"
-    pipeline_definition = pipeline.compipe_pipeline(pipeline_definition_file)
+    pipeline_definition = pipeline.compile_pipeline(pipeline_definition_file)
     return pipeline_definition
 
 def run_pipeline(pipeline_name):
-    from src import pipeline
+    from src.pipeline import pipeline
     pipeline_definition_file = f"{pipeline_name}_pipeline.json"
     return pipeline.run_pipeline(pipeline_definition_file)
 

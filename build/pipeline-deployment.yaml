@@ -145,4 +145,4 @@ steps:
 #  waitFor: ['Local Test E2E Pipeline']
   waitFor: ['Upload Pipeline to GCS']
 # Push TFX Image to Container Registy.
-images: ['gcr.io/$PROJECT_ID/tfx-chicago-taxi:latest']
+images: ['us-central1-docker.pkg.dev/curious-ivy-350600/curious-ivy-350600/tfx-chicago-taxi:latest']
