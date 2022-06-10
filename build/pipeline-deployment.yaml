@@ -78,14 +78,14 @@ steps:
 #
 # Build the image that encapsulates the pipeline.
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/$PROJECT_ID/tfx-chicago-taxi:latest', '.']
+  args: ['build', '-t', 'gcr.io/curious-ivy-350600/tfx-chicago-taxi:latest', '.']
   dir: 'mle-taxi-fare-prediction'
   id: 'Build TFX Image'
 #  waitFor: ['Local Test E2E Pipeline']
 #  waitFor: ['Clone Repository']
 
 # Compile the pipeline.
-- name: 'gcr.io/$PROJECT_ID/cicd:lastest'
+- name: 'gcr.io/curious-ivy-350600/cicd:lastest'
   entrypoint: 'python'
   args: ['build/utils.py',
           '--mode', 'compile-pipeline',
