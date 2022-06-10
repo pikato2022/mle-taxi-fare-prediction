@@ -14,7 +14,7 @@
 """TFX pipeline configurations."""
 
 
-PIPELINE_NAME = 'chicago'
+PIPELINE_NAME = 'chicago-vertex-pipelines'
 GOOGLE_CLOUD_PROJECT = 'curious-ivy-350600'     # <--- ENTER THIS
 GOOGLE_CLOUD_REGION = 'us-central1'
 # GCS_BUCKET_NAME = GOOGLE_CLOUD_PROJECT + '-gcs'

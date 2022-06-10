@@ -167,7 +167,7 @@ def main():
         )
         
     elif args.mode == 'compile-pipeline':
-        print(args.pipeline_name)
+        # print(args.pip)
         if not args.pipeline_name:
             raise ValueError("pipeline-name must be supplied.")
             
