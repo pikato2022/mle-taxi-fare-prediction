@@ -19,12 +19,12 @@
 steps:
 
 # Clone the repository.
-- name: 'gcr.io/cloud-builders/git'
-  args: ['clone', '--single-branch', '--branch',
-         '$_BRANCH', '$_REPO_URL',
-         '--depth', '1',
-         '--verbose']
-  id: 'Clone Repository'
+#- name: 'gcr.io/cloud-builders/git'
+#  args: ['clone', '--single-branch', '--branch',
+#         '$_BRANCH', '$_REPO_URL',
+#         '--depth', '1',
+#         '--verbose']
+#  id: 'Clone Repository'
   
 
 # Run datasource_utils unit tests.
@@ -77,7 +77,7 @@ steps:
   dir: 'mle-taxi-fare-prediction'
   id: 'Build TFX Image'
 #  waitFor: ['Local Test E2E Pipeline']
-  waitFor: ['Clone Repository']
+#  waitFor: ['Clone Repository']
 
 # Compile the pipeline.
 - name: 'gcr.io/$PROJECT_ID/cicd:lastest'
