@@ -35,7 +35,7 @@ steps:
   waitFor: ['Clone Repository']
 
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push',  'us-central1-docker.pkg.dev//$PROJECT_ID/mle-pipeline/tfx-chicago-taxi:tag1']
+  args: ['push', 'us-central1-docker.pkg.dev/${PROJECT_ID}/mle-pipeline/tfx-chicago-taxi:${SHORT_SHA}']
   id: 'Push TFX Image'
   waitFor: ['Build TFX Image']
 
@@ -67,7 +67,6 @@ steps:
   - 'PROJECT=$PROJECT_ID'
   - 'REGION=us-central1'
   - 'GCS_LOCATION=gs://$PROJECT_ID'
-  - 'TFX_IMAGE_URI=us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/tfx-chicago-taxi:tag1'
   id: 'Compile Pipeline'
 #  waitFor: ['Local Test E2E Pipeline']
   waitFor: ['Build cicd image']
@@ -92,10 +91,9 @@ steps:
   - 'PROJECT=$PROJECT_ID'
   - 'REGION=us-central1'
   - 'GCS_LOCATION=gs://$PROJECT_ID'
-  - 'TFX_IMAGE_URI=us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/tfx-chicago-taxi:latest'
   id: 'Run Pipeline'
   waitFor: ['Upload Pipeline to GCS']
 # Push TFX Image to Container Registy.
 images:
-- 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/tfx-chicago-taxi:tag1'
+- 'us-central1-docker.pkg.dev/${PROJECT_ID}/mle-pipeline/tfx-chicago-taxi:${SHORT_SHA}'
 timeout: 850s
