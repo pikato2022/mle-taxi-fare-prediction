@@ -49,7 +49,7 @@ steps:
   id: 'Build cicd image'
   waitFor: ['Upload trainer to GCS']
 # Compile the pipeline.
-- name: 'us-central1-docker.pkg.dev/$PROJECT_ID/$PROJECT_ID/cicd:latest'
+- name: 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/cicd:latest'
   entrypoint: 'python'
   args: ['build/utils.py',
           '--mode', 'compile-pipeline',
@@ -74,7 +74,7 @@ steps:
   waitFor: ['Compile Pipeline']
 
 # Run pipeline in VertexAI.
-- name: 'us-central1-docker.pkg.dev/$PROJECT_ID/$PROJECT_ID/cicd:latest'
+- name: 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/cicd:latest'
   entrypoint: 'python'
   args: ['build/utils.py',
           '--mode', 'run-pipeline',
@@ -85,7 +85,7 @@ steps:
   - 'PROJECT=$PROJECT_ID'
   - 'REGION=us-central1'
   - 'GCS_LOCATION=gs://$PROJECT_ID'
-  - 'TFX_IMAGE_URI=us-central1-docker.pkg.dev/$PROJECT_ID/$PROJECT_ID/tfx-chicago-taxi:latest'
+  - 'TFX_IMAGE_URI=us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/tfx-chicago-taxi:latest'
   id: 'Run Pipeline'
   waitFor: ['Upload Pipeline to GCS']
 # Push TFX Image to Container Registy.
