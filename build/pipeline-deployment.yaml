@@ -78,20 +78,25 @@ steps:
 #
 # Build the image that encapsulates the pipeline.
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/curious-ivy-350600/tfx-chicago-taxi:latest', '.']
+  args: ['build', '-t', 'us-central1-docker.pkg.dev/curious-ivy-350600/curious-ivy-350600/tfx-chicago-taxi:latest', '.']
   dir: 'mle-taxi-fare-prediction'
   id: 'Build TFX Image'
 #  waitFor: ['Local Test E2E Pipeline']
-#  waitFor: ['Clone Repository']
+  waitFor: ['Clone Repository']
 
 - name: 'gcr.io/cloud-builders/gsutil'
-  args: ['cp', 'src/pipeline/trainer.py', 'gs://curious-ivy-350600/pipeline_module/chicago-vertex-pipelines']
+  args: ['cp', 'src/pipeline/trainer.py', 'gs://curious-ivy-350600/pipeline_module/chicago-vertex-pipelines/trainer.py']
   dir: 'mle-taxi-fare-prediction'
   id:  'Upload trainer to GCS'
   waitFor: ['Build TFX Image']
-
+# build cicd image
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'us-central1-docker.pkg.dev/curious-ivy-350600/curious-ivy-350600/cicd:latest', 'build/.']
+  dir: 'mle-taxi-fare-prediction'
+  id: 'Build cicd image'
+  waitFor: ['Upload trainer to GCS']
 # Compile the pipeline.
-- name: 'gcr.io/curious-ivy-350600/cicd:lastest'
+- name: 'us-central1-docker.pkg.dev/curious-ivy-350600/curious-ivy-350600/cicd:latest'
   entrypoint: 'python'
   args: ['build/utils.py',
           '--mode', 'compile-pipeline',
@@ -104,12 +109,12 @@ steps:
 #  - 'MODEL_DISPLAY_NAME=$_MODEL_DISPLAY_NAME'
 #  - 'DATASET_DISPLAY_NAME=$_DATASET_DISPLAY_NAME'
   - 'GCS_LOCATION=gs://curious-ivy-350600'
-  - 'TFX_IMAGE_URI=gcr.io/curious-ivy-350600/tfx-chicago-taxi:latest'
+#  - 'TFX_IMAGE_URI=us-central1-docker.pkg.dev/curious-ivy-350600/curious-ivy-350600/tfx-chicago-taxi:latest'
 #  - 'BEAM_RUNNER=$_BEAM_RUNNER'
 #  - 'TRAINING_RUNNER=$_TRAINING_RUNNER'
   id: 'Compile Pipeline'
 #  waitFor: ['Local Test E2E Pipeline']
-  waitFor: ['Upload trainer to GCS']
+  waitFor: ['Build cicd image']
 
   
 # Upload compiled pipeline to GCS.
