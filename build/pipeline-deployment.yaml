@@ -119,7 +119,7 @@ steps:
   
 # Upload compiled pipeline to GCS.
 - name: 'gcr.io/cloud-builders/gsutil'
-  args: ['cp', 'chicago-vertex-pipelines.json', 'gs://curious-ivy-350600/pipeline_root/chicago-vertex-pipelines/chicago-vertex-pipelines.json']
+  args: ['cp', './chicago-vertex-pipelines.json', 'gs://curious-ivy-350600/pipeline_root/chicago-vertex-pipelines/chicago-vertex-pipelines.json']
   dir: 'mle-taxi-fare-prediction'
   id:  'Upload Pipeline to GCS'
   waitFor: ['Compile Pipeline']
