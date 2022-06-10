@@ -43,7 +43,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
 
 def compipe_pipeline(PIPELINE_NAME):
     import os
-
+    import config
     PIPELINE_DEFINITION_FILE = PIPELINE_NAME + '_pipeline.json'
 
     runner = tfx.orchestration.experimental.KubeflowV2DagRunner(

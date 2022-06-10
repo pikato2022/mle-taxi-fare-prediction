@@ -84,6 +84,12 @@ steps:
 #  waitFor: ['Local Test E2E Pipeline']
 #  waitFor: ['Clone Repository']
 
+- name: 'gcr.io/cloud-builders/gsutil'
+  args: ['cp', 'src/pipeline/trainer.py', 'gs://curious-ivy-350600/pipeline_module/chicago-vertex-pipelines']
+  dir: 'mle-taxi-fare-prediction'
+  id:  'Upload trainer to GCS'
+  waitFor: ['Build TFX Image']
+
 # Compile the pipeline.
 - name: 'gcr.io/curious-ivy-350600/cicd:lastest'
   entrypoint: 'python'
@@ -103,8 +109,8 @@ steps:
 #  - 'TRAINING_RUNNER=$_TRAINING_RUNNER'
   id: 'Compile Pipeline'
 #  waitFor: ['Local Test E2E Pipeline']
-  waitFor: ['Clone Repository']
-  
+  waitFor: ['Upload trainer to GCS']
+
   
 # Upload compiled pipeline to GCS.
 - name: 'gcr.io/cloud-builders/gsutil'
