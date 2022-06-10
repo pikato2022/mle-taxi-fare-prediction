@@ -19,13 +19,18 @@
 steps:
 
 # Clone the repository.
+#- name: 'gcr.io/cloud-builders/git'
+#  args: ['clone', '--single-branch', '--branch',
+#         '$_BRANCH', '$_REPO_URL',
+#         '--depth', '1',
+#         '--verbose']
+#  id: 'Clone Repository'
 - name: 'gcr.io/cloud-builders/git'
   args: ['clone', '--single-branch', '--branch',
-         '$_BRANCH', '$_REPO_URL',
+         'main', 'https://github.com/annanguyen19/mle-taxi-fare-prediction',
          '--depth', '1',
          '--verbose']
   id: 'Clone Repository'
-  
 
 # Run datasource_utils unit tests.
 #- name: '$_CICD_IMAGE_URI'
