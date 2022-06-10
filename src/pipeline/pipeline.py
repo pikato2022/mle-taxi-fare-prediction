@@ -13,7 +13,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
     print("go there")
     # Brings data into the pipeline.
     example_gen = tfx.components.CsvExampleGen(input_base=data_root)
-
+    print(example_gen)
     # Uses user-provided Python function that trains a model.
     trainer = tfx.components.Trainer(
         module_file=module_file,
@@ -70,7 +70,7 @@ def run_pipeline(pl):
     PIPELINE_DEFINITION_FILE = pl + '_pipeline.json'
     aiplatform.init(project=config.GOOGLE_CLOUD_PROJECT, location=config.GOOGLE_CLOUD_REGION)
 
-    job = pipeline_jobs.PipelineJob(template_path=os.path.join(config.PIPELINE_ROOT,PIPELINE_DEFINITION_FILE),
+    job = pipeline_jobs.PipelineJob(template_path=PIPELINE_DEFINITION_FILE,
                                     display_name=pl)
     job.run(sync=False)
     return "success"
