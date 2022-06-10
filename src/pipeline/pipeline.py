@@ -41,11 +41,12 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
         enable_cache=True)
 
 
-def compile_pipeline(PIPELINE_NAME):
-    print("hello there")
+def compile_pipeline(pl):
+    print(pl)
+
     import os
     # import config
-    PIPELINE_DEFINITION_FILE = PIPELINE_NAME + '_pipeline.json'
+    PIPELINE_DEFINITION_FILE = pl + '_pipeline.json'
 
     runner = tfx.orchestration.experimental.KubeflowV2DagRunner(
         config=tfx.orchestration.experimental.KubeflowV2DagRunnerConfig(),
@@ -53,7 +54,7 @@ def compile_pipeline(PIPELINE_NAME):
     # Following function will write the pipeline definition to PIPELINE_DEFINITION_FILE.
     return runner.run(
         _create_pipeline(
-            pipeline_name=PIPELINE_NAME,
+            pipeline_name=pl,
             pipeline_root=config.PIPELINE_ROOT,
             data_root=config.DATA_ROOT,
             module_file=os.path.join(config.MODULE_ROOT, _trainer_module_file),
