@@ -17,83 +17,116 @@
 #############################################################################
 
 steps:
+  # Clone the repository.
 
-# Clone the repository.
+  - name: "gcr.io/cloud-builders/git"
+    args:
+      [
+        "clone",
+        "--single-branch",
+        "--branch",
+        "main",
+        "https://github.com/annanguyen19/mle-taxi-fare-prediction",
+        "--depth",
+        "1",
+        "--verbose",
+      ]
+    id: "Clone Repository"
 
-- name: 'gcr.io/cloud-builders/git'
-  args: ['clone', '--single-branch', '--branch',
-         'main', 'https://github.com/annanguyen19/mle-taxi-fare-prediction',
-         '--depth', '1',
-         '--verbose']
-  id: 'Clone Repository'
+  # Build the image that encapsulates the pipeline.
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-t",
+        "us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/tfx-chicago-taxi:${SHORT_SHA}",
+        ".",
+      ]
+    dir: "mle-taxi-fare-prediction"
+    id: "Build TFX Image"
+    waitFor: ["Clone Repository"]
 
-# Build the image that encapsulates the pipeline.
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/tfx-chicago-taxi:${SHORT_SHA}', '.']
-  dir: 'mle-taxi-fare-prediction'
-  id: 'Build TFX Image'
-  waitFor: ['Clone Repository']
+  #- name: 'gcr.io/cloud-builders/docker'
+  #  args: ['push', 'us-central1-docker.pkg.dev/${PROJECT_ID}/mle-pipeline/tfx-chicago-taxi:${SHORT_SHA}']
+  #  id: 'Push TFX Image'
+  #  waitFor: ['Build TFX Image']
 
-#- name: 'gcr.io/cloud-builders/docker'
-#  args: ['push', 'us-central1-docker.pkg.dev/${PROJECT_ID}/mle-pipeline/tfx-chicago-taxi:${SHORT_SHA}']
-#  id: 'Push TFX Image'
-#  waitFor: ['Build TFX Image']
+  # push to registry
+  - name: "gcr.io/cloud-builders/gsutil"
+    args:
+      [
+        "cp",
+        "src/pipeline/trainer.py",
+        "gs://$PROJECT_ID/pipeline_module/chicago-vertex-pipelines/trainer.py",
+      ]
+    dir: "mle-taxi-fare-prediction"
+    id: "Upload trainer to GCS"
+    waitFor: ["Build TFX Image"]
 
-# push to registry
-- name: 'gcr.io/cloud-builders/gsutil'
-  args: ['cp', 'src/pipeline/trainer.py', 'gs://$PROJECT_ID/pipeline_module/chicago-vertex-pipelines/trainer.py']
-  dir: 'mle-taxi-fare-prediction'
-  id:  'Upload trainer to GCS'
-  waitFor: ['Build TFX Image']
+  # build cicd image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-t",
+        "us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/cicd:latest",
+        "build/.",
+      ]
+    dir: "mle-taxi-fare-prediction"
+    id: "Build cicd image"
+    waitFor: ["Upload trainer to GCS"]
 
+  # Compile the pipeline.
+  - name: "us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/cicd:latest"
+    entrypoint: "python"
+    args:
+      [
+        "build/utils.py",
+        "--mode",
+        "compile-pipeline",
+        "--pipeline-name",
+        "chicago-vertex-pipelines",
+      ]
+    dir: "mle-taxi-fare-prediction"
+    env:
+      - "PROJECT=$PROJECT_ID"
+      - "REGION=us-central1"
+      - "GCS_LOCATION=gs://$PROJECT_ID"
+    id: "Compile Pipeline"
+    #  waitFor: ['Local Test E2E Pipeline']
+    waitFor: ["Build cicd image"]
 
-# build cicd image
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/cicd:latest', 'build/.']
-  dir: 'mle-taxi-fare-prediction'
-  id: 'Build cicd image'
-  waitFor: ['Upload trainer to GCS']
+  # Upload compiled pipeline to GCS.
+  - name: "gcr.io/cloud-builders/gsutil"
+    args:
+      [
+        "cp",
+        "./chicago-vertex-pipelines_pipeline.json",
+        "gs://$PROJECT_ID/pipeline_root/chicago-vertex-pipelines/chicago-vertex-pipelines.json",
+      ]
+    dir: "mle-taxi-fare-prediction"
+    id: "Upload Pipeline to GCS"
+    waitFor: ["Compile Pipeline"]
 
-
-# Compile the pipeline.
-- name: 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/cicd:latest'
-  entrypoint: 'python'
-  args: ['build/utils.py',
-          '--mode', 'compile-pipeline',
-          '--pipeline-name', 'chicago-vertex-pipelines'
-          ]
-  dir: 'mle-taxi-fare-prediction'
-  env: 
-  - 'PROJECT=$PROJECT_ID'
-  - 'REGION=us-central1'
-  - 'GCS_LOCATION=gs://$PROJECT_ID'
-  id: 'Compile Pipeline'
-#  waitFor: ['Local Test E2E Pipeline']
-  waitFor: ['Build cicd image']
-
-  
-# Upload compiled pipeline to GCS.
-- name: 'gcr.io/cloud-builders/gsutil'
-  args: ['cp', './chicago-vertex-pipelines_pipeline.json', 'gs://$PROJECT_ID/pipeline_root/chicago-vertex-pipelines/chicago-vertex-pipelines.json']
-  dir: 'mle-taxi-fare-prediction'
-  id:  'Upload Pipeline to GCS'
-  waitFor: ['Compile Pipeline']
-
-# Run pipeline in VertexAI.
-- name: 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/cicd:latest'
-  entrypoint: 'python'
-  args: ['build/utils.py',
-          '--mode', 'run-pipeline',
-          '--pipeline-name', 'chicago-vertex-pipelines'
-          ]
-  dir: 'mle-taxi-fare-prediction'
-  env:
-  - 'PROJECT=$PROJECT_ID'
-  - 'REGION=us-central1'
-  - 'GCS_LOCATION=gs://$PROJECT_ID'
-  id: 'Run Pipeline'
-  waitFor: ['Upload Pipeline to GCS']
+  # Run pipeline in VertexAI.
+  - name: "us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/cicd:latest"
+    entrypoint: "python"
+    args:
+      [
+        "build/utils.py",
+        "--mode",
+        "run-pipeline",
+        "--pipeline-name",
+        "chicago-vertex-pipelines",
+      ]
+    dir: "mle-taxi-fare-prediction"
+    env:
+      - "PROJECT=$PROJECT_ID"
+      - "REGION=us-central1"
+      - "GCS_LOCATION=gs://$PROJECT_ID"
+    id: "Run Pipeline"
+    waitFor: ["Upload Pipeline to GCS"]
 # Push TFX Image to Container Registy.
 #images:
 #- 'us-central1-docker.pkg.dev/${PROJECT_ID}/mle-pipeline/tfx-chicago-taxi'
-timeout: 850s
+timeout: 2000s
