@@ -11,26 +11,11 @@ _trainer_module_file = 'trainer.py'
 # slightly modified because we don't need `metadata_path` argument.
 
 def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
-                     module_file: str, serving_model_dir: str, endpoint_name: str, project_id: str, region: str, use_gpu: bool
+                     module_file: str, serving_model_dir: str, endpoint_name: str, project_id: str, region: str,
+                     use_gpu: bool
                      ) -> tfx.dsl.Pipeline:
-    """_summary_
-
-    Args:
-        pipeline_name (str): 
-        pipeline_root (str):
-        data_root (str): 
-        module_file (str): 
-        serving_model_dir (str):
-        endpoint_name (str): 
-        project_id (str): 
-        region (str):
-        use_gpu (bool): 
-
-    Returns:
-        tfx.dsl.Pipeline: _description_
-    """
-  # NEW: Configuration for Vertex AI Training.
-  # This dictionary will be passed as `CustomJobSpec`.
+    # NEW: Configuration for Vertex AI Training.
+    # This dictionary will be passed as `CustomJobSpec`.
     vertex_job_spec = {
         'project': project_id,
         'worker_pool_specs': [{
@@ -52,24 +37,24 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
             'accelerator_count': 1
         })
 
-        
     """Creates a five pipeline with TFX."""
     # Brings data into the pipeline.
     example_gen = tfx.components.CsvExampleGen(input_base=data_root)
 
     statistics_gen = tfx.components.StatisticsGen(examples=example_gen.outputs['examples'])
 
-    schema_gen = tfx.components.SchemaGen(statistics=statistics_gen.outputs['statistics'],infer_feature_shape=False)
+    schema_gen = tfx.components.SchemaGen(statistics=statistics_gen.outputs['statistics'], infer_feature_shape=False)
 
-    example_validator = tfx.components.ExampleValidator(statistics=statistics_gen.outputs['statistics'],schema=schema_gen.outputs['schema'])
+    example_validator = tfx.components.ExampleValidator(statistics=statistics_gen.outputs['statistics'],
+                                                        schema=schema_gen.outputs['schema'])
 
     # Trains a model using Vertex AI Training.
     # NEW: We need to specify a Trainer for GCP with related configs.
     trainer = tfx.extensions.google_cloud_ai_platform.Trainer(
         module_file=module_file,
         examples=example_gen.outputs['examples'],
-        train_args=tfx.proto.TrainArgs(num_steps=515), #66k/128
-        eval_args=tfx.proto.EvalArgs(num_steps=265), #34k/64
+        train_args=tfx.proto.TrainArgs(num_steps=1500),  # 100
+        eval_args=tfx.proto.EvalArgs(num_steps=1500),  # 5
         custom_config={
             tfx.extensions.google_cloud_ai_platform.ENABLE_VERTEX_KEY:
                 True,
@@ -81,14 +66,13 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
                 use_gpu,
         })
 
-        
     # # Uses user-provided Python function that trains a model.
     # trainer = tfx.components.Trainer(
     #     module_file=module_file,
     #     examples=example_gen.outputs['examples'],
     #     train_args=tfx.proto.TrainArgs(num_steps=1500), #100
     #     eval_args=tfx.proto.EvalArgs(num_steps=1500)) #5
-        
+
     # NEW: Configuration for pusher.
     vertex_serving_spec = {
         'project_id': project_id,
@@ -100,9 +84,11 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
         # Machine type is the compute resource to serve prediction requests.
         # See https://cloud.google.com/vertex-ai/docs/predictions/configure-compute#machine-types
         # for available machine types and acccerators.
+        'min_replica_count': 1,
+        'max_replica_count': 4,
         'machine_type': 'n1-standard-4',
     }
-        
+
     # Vertex AI provides pre-built containers with various configurations for
     # serving.
     # See https://cloud.google.com/vertex-ai/docs/predictions/pre-built-containers
@@ -114,7 +100,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
             'accelerator_count': 1
         })
         serving_image = 'us-docker.pkg.dev/vertex-ai/prediction/tf2-gpu.2-6:latest'
-        
+
     # NEW: Pushes the model to Vertex AI.
     pusher = tfx.extensions.google_cloud_ai_platform.Pusher(
         model=trainer.outputs['model'],
@@ -160,7 +146,7 @@ def compile_pipeline(pl):
         config=tfx.orchestration.experimental.KubeflowV2DagRunnerConfig(),
         output_filename=PIPELINE_DEFINITION_FILE)
     # Following function will write the pipeline definition to PIPELINE_DEFINITION_FILE.
-    _ = runner.run(
+    return runner.run(
         _create_pipeline(
             pipeline_name=pl,
             pipeline_root=config.PIPELINE_ROOT,
@@ -183,5 +169,3 @@ def run_pipeline(pl):
                                     display_name=pl)
     job.run(sync=False)
     return "success"
-
-

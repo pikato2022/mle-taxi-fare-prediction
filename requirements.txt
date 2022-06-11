@@ -1,6 +1,7 @@
-kfp==1.8.1
+kfp==1.8.12
 google-cloud-bigquery==2.26.0
 google-cloud-bigquery-storage==2.7.0
 google-cloud-aiplatform==1.4.2
 cloudml-hypertune==0.1.0.dev6
 pytest
+tensorflow==2.8.2
