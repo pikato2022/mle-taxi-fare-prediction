@@ -1,4 +1,4 @@
-FROM gcr.io/tfx-oss-public/tfx:1.2.0
+FROM gcr.io/tfx-oss-public/tfx:1.8.0
 
 RUN pip install -U pip
 RUN pip install google-cloud-aiplatform==1.4.2 google-cloud-aiplatform[tensorboard]
