@@ -45,7 +45,7 @@ steps:
   args: ['cp', 'src/pipeline/trainer.py', 'gs://$PROJECT_ID/pipeline_module/chicago-vertex-pipelines/trainer.py']
   dir: 'mle-taxi-fare-prediction'
   id:  'Upload trainer to GCS'
-  waitFor: ['Push TFX Image']
+  waitFor: ['Save to GCS']
 
 
 # build cicd image
