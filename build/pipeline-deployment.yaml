@@ -29,7 +29,7 @@ steps:
 
 # Build the image that encapsulates the pipeline.
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/tfx-chicago-taxi', '.']
+  args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-asdas/tfx-chicago-taxi', '.']
   dir: 'mle-taxi-fare-prediction'
   id: 'Build TFX Image'
   waitFor: ['Clone Repository']
