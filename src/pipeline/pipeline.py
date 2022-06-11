@@ -84,6 +84,8 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
         # Machine type is the compute resource to serve prediction requests.
         # See https://cloud.google.com/vertex-ai/docs/predictions/configure-compute#machine-types
         # for available machine types and acccerators.
+        'min_replica_count': 1,
+        'max_replica_count': 4,
         'machine_type': 'n1-standard-4',
     }
 
