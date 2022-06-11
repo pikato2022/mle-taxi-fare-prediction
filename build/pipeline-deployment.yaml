@@ -35,9 +35,8 @@ steps:
   waitFor: ['Clone Repository']
 
 - name: 'gcr.io/cloud-builders/docker'
-  args: [ 'cp', 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/tfx-chicago-taxi:${SHORT_SHA}', 'gs://$PROJECT_ID/pipeline_module/chicago-vertex-pipelines/trainer.py' ]
-  dir: 'mle-taxi-fare-prediction'
-  id: 'Save to GCS'
+  args: ['push', 'us-central1-docker.pkg.dev/${PROJECT_ID}/mle-pipeline/tfx-chicago-taxi']
+  id: 'Push TFX Image'
   waitFor: ['Build TFX Image']
 
 # push to registry
@@ -45,7 +44,7 @@ steps:
   args: ['cp', 'src/pipeline/trainer.py', 'gs://$PROJECT_ID/pipeline_module/chicago-vertex-pipelines/trainer.py']
   dir: 'mle-taxi-fare-prediction'
   id:  'Upload trainer to GCS'
-  waitFor: ['Save to GCS']
+  waitFor: ['Push TFX Image']
 
 
 # build cicd image
