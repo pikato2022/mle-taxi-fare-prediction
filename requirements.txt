@@ -2,3 +2,4 @@ kfp==1.8.12
 google-cloud-aiplatform==1.13.0
 pytest
 tensorflow==2.8.2
+click>=8.0.0
