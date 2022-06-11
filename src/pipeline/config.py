@@ -19,7 +19,8 @@ GOOGLE_CLOUD_PROJECT = 'mle-chicago-taxi-trip'     # <--- ENTER THIS
 GOOGLE_CLOUD_REGION = 'us-central1'
 # GCS_BUCKET_NAME = GOOGLE_CLOUD_PROJECT + '-gcs'
 GCS_BUCKET_NAME = GOOGLE_CLOUD_PROJECT
-
+# Name of Vertex AI Endpoint.
+ENDPOINT_NAME = 'prediction-' + PIPELINE_NAME
 # Path to various pipeline artifact.
 PIPELINE_ROOT = 'gs://{}/pipeline_root/{}'.format(
     GCS_BUCKET_NAME, PIPELINE_NAME)
