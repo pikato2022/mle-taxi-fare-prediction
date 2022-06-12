@@ -44,8 +44,9 @@ CAIP_SERVICE_ACCOUNT="service-${PROJECT_NUMBER}@cloud-ml.google.com.iam.gservice
 gcloud projects add-iam-policy-binding $PROJECT_ID \
   --member serviceAccount:$CAIP_SERVICE_ACCOUNT \
   --role=roles/storage.objectAdmin
-  
-  gcloud projects add-iam-policy-binding $PROJECT_ID \
+````
+```Shell
+ gcloud projects add-iam-policy-binding $PROJECT_ID \
  --member serviceAccount:$CAIP_SERVICE_ACCOUNT \
  --role=roles/ml.admin
 ```
