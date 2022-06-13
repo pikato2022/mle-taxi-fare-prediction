@@ -25,8 +25,8 @@ steps:
         "clone",
         "--single-branch",
         "--branch",
-        "main",
-        "https://github.com/annanguyen19/mle-taxi-fare-prediction",
+        "$_BRANCH_NAME",
+        "$_REPO_GIT",
         "--depth",
         "1",
         "--verbose",
@@ -39,7 +39,7 @@ steps:
       [
         "build",
         "-t",
-        "us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/tfx-chicago-taxi:${SHORT_SHA}",
+        "us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/$__TFX_IMAGE:${SHORT_SHA}",
         ".",
       ]
     dir: "mle-taxi-fare-prediction"
@@ -57,7 +57,7 @@ steps:
       [
         "cp",
         "src/pipeline/trainer.py",
-        "gs://$PROJECT_ID/pipeline_module/chicago-vertex-pipelines/trainer.py",
+        "gs://$PROJECT_ID/pipeline_module/$_PIPELINE_NAME/trainer.py",
       ]
     dir: "mle-taxi-fare-prediction"
     id: "Upload trainer to GCS"
@@ -101,8 +101,8 @@ steps:
     args:
       [
         "cp",
-        "./chicago-vertex-pipelines_pipeline.json",
-        "gs://$PROJECT_ID/pipeline_root/chicago-vertex-pipelines/chicago-vertex-pipelines.json",
+        "./$_PIPELINE_NAME.json",
+        "gs://$PROJECT_ID/pipeline_root/$_PIPELINE_NAME/$_PIPELINE_NAME.json",
       ]
     dir: "mle-taxi-fare-prediction"
     id: "Upload Pipeline to GCS"
@@ -117,7 +117,7 @@ steps:
         "--mode",
         "run-pipeline",
         "--pipeline-name",
-        "chicago-vertex-pipelines",
+        "$_PIPELINE_NAME",
       ]
     dir: "mle-taxi-fare-prediction"
     env:

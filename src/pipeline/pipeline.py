@@ -3,6 +3,7 @@
 from tfx import v1 as tfx
 from src.pipeline import config
 import kfp #kubeflow pipeline
+import tensorflow_model_analysis as tfma
 
 _trainer_module_file = 'trainer.py'
 
@@ -68,8 +69,8 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
     trainer = tfx.extensions.google_cloud_ai_platform.Trainer(
         module_file=module_file,
         examples=example_gen.outputs['examples'],
-        train_args=tfx.proto.TrainArgs(num_steps=515), #66k/128
-        eval_args=tfx.proto.EvalArgs(num_steps=265), #34k/64
+        train_args=tfx.proto.TrainArgs(num_steps=1600), #66k/128
+        eval_args=tfx.proto.EvalArgs(num_steps=1600), #34k/64
         custom_config={
             tfx.extensions.google_cloud_ai_platform.ENABLE_VERTEX_KEY:
                 True,
@@ -81,7 +82,32 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
                 use_gpu,
         })
 
-        
+    
+    # Eval component      
+    accuracy_threshold = tfma.MetricThreshold(
+                value_threshold=tfma.GenericValueThreshold(
+                    lower_bound={'value': 2.0},
+                    upper_bound={'value': 5.0})
+                )
+
+    metrics_specs = tfma.MetricsSpec(
+                   metrics = [
+                       tfma.MetricConfig(class_name='MeanAbsoluteError',
+                           threshold=accuracy_threshold),
+                       tfma.MetricConfig(class_name='MeanSquaredError')])
+
+    eval_config = tfma.EvalConfig(
+        model_specs=[
+            tfma.ModelSpec(label_key='trip_total')
+                    ],
+        metrics_specs=[metrics_specs],
+            slicing_specs=[tfma.SlicingSpec()])
+    
+    model_analyzer = tfx.components.Evaluator(
+    examples=example_gen.outputs['examples'],
+    model=trainer.outputs['model'],
+    eval_config=eval_config)
+                
     # # Uses user-provided Python function that trains a model.
     # trainer = tfx.components.Trainer(
     #     module_file=module_file,
@@ -102,7 +128,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
         # for available machine types and acccerators.
         'machine_type': 'n1-standard-4',
     }
-        
+    
     # Vertex AI provides pre-built containers with various configurations for
     # serving.
     # See https://cloud.google.com/vertex-ai/docs/predictions/pre-built-containers
@@ -118,6 +144,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
     # NEW: Pushes the model to Vertex AI.
     pusher = tfx.extensions.google_cloud_ai_platform.Pusher(
         model=trainer.outputs['model'],
+        model_blessing=model_analyzer.outputs['blessing'],
         custom_config={
             tfx.extensions.google_cloud_ai_platform.ENABLE_VERTEX_KEY:
                 True,
@@ -143,6 +170,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
         schema_gen,
         example_validator,
         trainer,
+        model_analyzer,
         pusher,
     ]
 
@@ -183,4 +211,3 @@ def run_pipeline(pl):
                                     display_name=pl)
     job.run(sync=False)
     return "success"
-
