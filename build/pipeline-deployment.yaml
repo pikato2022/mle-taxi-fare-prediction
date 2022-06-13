@@ -39,7 +39,7 @@ steps:
       [
         "build",
         "-t",
-        "us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/$__TFX_IMAGE:${SHORT_SHA}",
+        "us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/$_TFX_IMAGE:${SHORT_SHA}",
         ".",
       ]
     dir: "mle-taxi-fare-prediction"
@@ -129,4 +129,4 @@ steps:
 # Push TFX Image to Container Registy.
 #images:
 #- 'us-central1-docker.pkg.dev/${PROJECT_ID}/mle-pipeline/tfx-chicago-taxi'
-timeout: 2000s
+timeout: 3500s
