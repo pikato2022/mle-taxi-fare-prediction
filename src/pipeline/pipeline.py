@@ -15,6 +15,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
                      module_file: str, serving_model_dir: str, endpoint_name: str, project_id: str, region: str, use_gpu: bool
                      ) -> tfx.dsl.Pipeline:
     """_summary_
+
     Args:
         pipeline_name (str): 
         pipeline_root (str):
@@ -25,6 +26,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
         project_id (str): 
         region (str):
         use_gpu (bool): 
+
     Returns:
         tfx.dsl.Pipeline: _description_
     """
