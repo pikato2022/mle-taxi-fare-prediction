@@ -101,7 +101,7 @@ steps:
     args:
       [
         "cp",
-        "./$_PIPELINE_NAME.json",
+        "./$_PIPELINE_NAME_pipeline.json",
         "gs://$PROJECT_ID/pipeline_root/$_PIPELINE_NAME/$_PIPELINE_NAME.json",
       ]
     dir: "mle-taxi-fare-prediction"
