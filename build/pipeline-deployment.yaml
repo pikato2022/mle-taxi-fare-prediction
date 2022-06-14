@@ -85,7 +85,7 @@ steps:
         "--mode",
         "compile-pipeline",
         "--pipeline-name",
-        "chicago-vertex-pipelines",
+        "$_PIPELINE_NAME",
       ]
     dir: "mle-taxi-fare-prediction"
     env:
