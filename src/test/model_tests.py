@@ -33,7 +33,11 @@ EXPECTED_HYPERPARAMS_KEYS = [
     "num_epochs",
 ]
 
-
+# epochs = 10,
+# steps_per_epoch = fn_args.train_steps,
+# validation_data = eval_dataset,
+# validation_steps = fn_args.eval_steps,
+# callbacks = [tensorboard_callback])
 def test_hyperparams_defaults():
     hyperparams = {"hidden_units": [64, 32]}
 

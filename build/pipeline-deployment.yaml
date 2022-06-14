@@ -109,24 +109,24 @@ steps:
     waitFor: ["Compile Pipeline"]
 
   # Run pipeline in VertexAI.
-  - name: "us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/cicd:latest"
-    entrypoint: "python"
-    args:
-      [
-        "build/utils.py",
-        "--mode",
-        "run-pipeline",
-        "--pipeline-name",
-        "$_PIPELINE_NAME",
-      ]
-    dir: "mle-taxi-fare-prediction"
-    env:
-      - "PROJECT=$PROJECT_ID"
-      - "REGION=us-central1"
-      - "GCS_LOCATION=gs://$PROJECT_ID"
-    id: "Run Pipeline"
-    waitFor: ["Upload Pipeline to GCS"]
+#  - name: "us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/cicd:latest"
+#    entrypoint: "python"
+#    args:
+#      [
+#        "build/utils.py",
+#        "--mode",
+#        "run-pipeline",
+#        "--pipeline-name",
+#        "$_PIPELINE_NAME",
+#      ]
+#    dir: "mle-taxi-fare-prediction"
+#    env:
+#      - "PROJECT=$PROJECT_ID"
+#      - "REGION=us-central1"
+#      - "GCS_LOCATION=gs://$PROJECT_ID"
+#    id: "Run Pipeline"
+#    waitFor: ["Upload Pipeline to GCS"]
 # Push TFX Image to Container Registy.
-#images:
-#- 'us-central1-docker.pkg.dev/${PROJECT_ID}/mle-pipeline/tfx-chicago-taxi'
-timeout: 3500s
+images:
+- 'us-central1-docker.pkg.dev/${PROJECT_ID}/mle-pipeline/tfx-chicago-taxi'
+timeout: 1000s
