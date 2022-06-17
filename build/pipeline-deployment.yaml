@@ -43,7 +43,7 @@ steps:
         ".",
       ]
     id: "Build TFX Image"
-    dir: "mle-taxi-fare-prediction"
+    # dir: "mle-taxi-fare-prediction"
     # waitFor: ["Clone Repository"]
 
   # push to registry
