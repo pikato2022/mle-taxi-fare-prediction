@@ -39,7 +39,7 @@ steps:
       [
         "build",
         "-t",
-        "us-west2-docker.pkg.dev/$PROJECT_ID/tfx-pipeline/$_TFX_IMAGE:${SHORT_SHA}",
+        "us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/$_TFX_IMAGE:${SHORT_SHA}",
         ".",
       ]
     id: "Build TFX Image"
@@ -118,5 +118,5 @@ steps:
     waitFor: ["Upload Pipeline to GCS"]
 # Push TFX Image to Container Registy.
 images:
-- 'us-central1-docker.pkg.dev/${PROJECT_ID}/mle-pipeline/$_TFX_IMAGE:${SHORT_SHA}'
+- 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/$_TFX_IMAGE:${SHORT_SHA}'
 timeout: 4880s
