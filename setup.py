@@ -2,7 +2,7 @@ import setuptools
 
 REQUIRED_PACKAGES = [
     "google-cloud-aiplatform==1.4.2",
-    "tensorflow-transform==1.2.0",
+    "tensorflow-transform==1.8.0",
     "tensorflow-data-validation==1.2.0",
     "cloudml-hypertune==0.1.0.dev6"
 ]
