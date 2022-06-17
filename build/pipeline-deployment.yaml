@@ -43,6 +43,7 @@ steps:
         ".",
       ]
     id: "Build TFX Image"
+    dir: "mle-taxi-fare-prediction"
     # waitFor: ["Clone Repository"]
 
   # push to registry
@@ -79,7 +80,7 @@ steps:
         "--pipeline-name",
         "chicago-vertex-pipelines",
       ]
-    dir: "mle-taxi-fare-prediction"
+    # dir: "mle-taxi-fare-prediction"
     env:
       - "PROJECT=$PROJECT_ID"
       - "REGION=us-central1"
@@ -110,6 +111,7 @@ steps:
         "--pipeline-name",
         "$_PIPELINE_NAME",
       ]
+    # dir: "mle-taxi-fare-prediction"
     env:
       - "PROJECT=$PROJECT_ID"
       - "REGION=us-central1"
