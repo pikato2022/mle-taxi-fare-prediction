@@ -19,19 +19,19 @@
 steps:
   # Clone the repository.
 
-  - name: "gcr.io/cloud-builders/git"
-    args:
-      [
-        "clone",
-        "--single-branch",
-        "--branch",
-        "$_BRANCH_NAME",
-        "$_REPO_GIT",
-        "--depth",
-        "1",
-        "--verbose",
-      ]
-    id: "Clone Repository"
+  # - name: "gcr.io/cloud-builders/git"
+  #   args:
+  #     [
+  #       "clone",
+  #       "--single-branch",
+  #       "--branch",
+  #       "$_BRANCH_NAME",
+  #       "$_REPO_GIT",
+  #       "--depth",
+  #       "1",
+  #       "--verbose",
+  #     ]
+  #   id: "Clone Repository"
 
   # Build the image that encapsulates the pipeline.
   - name: "gcr.io/cloud-builders/docker"
@@ -42,11 +42,16 @@ steps:
         "us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/$_TFX_IMAGE:${SHORT_SHA}",
         ".",
       ]
-    dir: "mle-taxi-fare-prediction"
     id: "Build TFX Image"
+<<<<<<< HEAD
     waitFor: ["Clone Repository"]
 
 # push to registry trainer
+=======
+    # waitFor: ["Clone Repository"]
+
+  # push to registry
+>>>>>>> 133c51980274203a59ef15c3c6ac3131b3190e90
   - name: "gcr.io/cloud-builders/gsutil"
     args:
       [
@@ -54,8 +59,12 @@ steps:
         "src/pipeline/trainer_transform.py",
         "gs://$PROJECT_ID/pipeline_module/chicago-vertex-pipelines/trainer_transform.py",
       ]
+<<<<<<< HEAD
     dir: "mle-taxi-fare-prediction"
     id: "Upload transform to GCS"
+=======
+    id: "Upload trainer to GCS"
+>>>>>>> 133c51980274203a59ef15c3c6ac3131b3190e90
     waitFor: ["Build TFX Image"]
 
   # push to registry tuner
@@ -96,7 +105,6 @@ steps:
         "us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/cicd:latest",
         "build/.",
       ]
-    dir: "mle-taxi-fare-prediction"
     id: "Build cicd image"
     waitFor: ["Upload vertex to GCS"]
 
@@ -128,7 +136,6 @@ steps:
         "./chicago-vertex-pipelines_pipeline.json",
         "gs://$PROJECT_ID/pipeline_root/$_PIPELINE_NAME/$_PIPELINE_NAME.json",
       ]
-    dir: "mle-taxi-fare-prediction"
     id: "Upload Pipeline to GCS"
     waitFor: ["Compile Pipeline"]
 
@@ -143,7 +150,6 @@ steps:
         "--pipeline-name",
         "$_PIPELINE_NAME",
       ]
-    dir: "mle-taxi-fare-prediction"
     env:
       - "PROJECT=$PROJECT_ID"
       - "REGION=us-central1"
@@ -151,6 +157,6 @@ steps:
     id: "Run Pipeline"
     waitFor: ["Upload Pipeline to GCS"]
 # Push TFX Image to Container Registy.
-#images:
-#- 'us-central1-docker.pkg.dev/${PROJECT_ID}/mle-pipeline/tfx-chicago-taxi'
-timeout: 3500s
+images:
+- 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/$_TFX_IMAGE:${SHORT_SHA}'
+timeout: 4880s
