@@ -46,9 +46,8 @@ steps:
       [
         "cp",
         "src/pipeline/trainer_tune.py",
-        "gs://$PROJECT_ID/pipeline_module/chicago-vertex-pipelines/trainer_tune.py",
+        "gs://$PROJECT_ID/pipeline_module/$_PIPELINE_NAME/trainer_tune.py",
       ]
-    dir: "mle-taxi-fare-prediction"
     id: "Upload tuner to GCS"
     waitFor: ["Upload transform to GCS"]
 
@@ -58,9 +57,8 @@ steps:
       [
         "cp",
         "src/pipeline/trainer_vertex.py",
-        "gs://$PROJECT_ID/pipeline_module/chicago-vertex-pipelines/trainer_vertex.py",
+        "gs://$PROJECT_ID/pipeline_module/$_PIPELINE_NAME/trainer_vertex.py",
       ]
-    dir: "mle-taxi-fare-prediction"
     id: "Upload vertex to GCS"
     waitFor: ["Upload tuner to GCS"]
 
