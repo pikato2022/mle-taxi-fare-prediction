@@ -13,7 +13,7 @@
 # limitations under the License.
 
 #############################################################################
-# CI/CD steps for Cloud Build to test and deploy a TFX pipeline to Vertex AI.
+# CI/CD steps for Cloud Build to tests and deploy a TFX pipeline to Vertex AI.
 #############################################################################
 
 steps:

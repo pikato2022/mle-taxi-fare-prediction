@@ -38,7 +38,7 @@ def test_e2e_pipeline():
 
     # if tf.io.gfile.exists(gcs_location):
     #     tf.io.gfile.rmtree(gcs_location)
-    # logging.info(f"Pipeline e2e test artifacts stored in: {gcs_location}")
+    # logging.info(f"Pipeline e2e tests artifacts stored in: {gcs_location}")
 
     pipeline_root = config.PIPELINE_ROOT
 
