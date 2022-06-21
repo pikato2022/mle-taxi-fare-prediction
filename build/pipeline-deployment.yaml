@@ -17,6 +17,19 @@
 #############################################################################
 
 steps:
+  - name: "gcr.io/cloud-builders/git"
+    args:
+      [
+        "clone",
+        "--single-branch",
+        "--branch",
+        "$_BRANCH_NAME",
+        "$_REPO_GIT",
+        "--depth",
+        "1",
+        "--verbose",
+      ]
+    id: "Clone Repository"
 
   - name: "gcr.io/cloud-builders/docker"
     args:
@@ -26,13 +39,15 @@ steps:
         "us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/cicd:latest",
         "build/.",
       ]
+    dir: "mle-taxi-fare-prediction"
     id: "Build cicd image"
+    waitFor: ["Clone Repository"]
 
   # Run model unit tests.
   - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/cicd:latest'
     entrypoint: 'pytest'
     args: [ 'src/tests/model_tests.py', '-s' ]
-#    dir: 'mlops-with-vertex-ai'
+    dir: "mle-taxi-fare-prediction"
     id: 'Unit Test Model'
     waitFor: ["Build cicd image"]
     timeout: 1800s
@@ -52,6 +67,7 @@ steps:
   #  - 'TEST_LIMIT=$_CI_TEST_LIMIT'
   #  - 'UPLOAD_MODEL=$_CI_UPLOAD_MODEL'
   #  - 'ACCURACY_THRESHOLD=$_CI_ACCURACY_THRESHOLD'
+    dir: "mle-taxi-fare-prediction"
     id: 'Local Test E2E Pipeline'
     waitFor: ['Unit Test Model']
     timeout: 1800s
@@ -65,6 +81,7 @@ steps:
         "us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/$_TFX_IMAGE:${SHORT_SHA}",
         ".",
       ]
+    dir: "mle-taxi-fare-prediction"
     id: "Build TFX Image"
     waitFor: ['Local Test E2E Pipeline']
 
@@ -75,6 +92,7 @@ steps:
         "src/pipeline/trainer_transform.py",
         "gs://$PROJECT_ID/pipeline_module/$_PIPELINE_NAME/trainer_transform.py",
       ]
+    dir: "mle-taxi-fare-prediction"
     id: "Upload transform to GCS"
     waitFor: ["Build TFX Image"]
 
@@ -86,6 +104,7 @@ steps:
         "src/pipeline/trainer_tune.py",
         "gs://$PROJECT_ID/pipeline_module/$_PIPELINE_NAME/trainer_tune.py",
       ]
+    dir: "mle-taxi-fare-prediction"
     id: "Upload tuner to GCS"
     waitFor: ["Upload transform to GCS"]
 
@@ -97,6 +116,7 @@ steps:
         "src/pipeline/trainer_vertex.py",
         "gs://$PROJECT_ID/pipeline_module/$_PIPELINE_NAME/trainer_vertex.py",
       ]
+    dir: "mle-taxi-fare-prediction"
     id: "Upload vertex to GCS"
     waitFor: ["Upload tuner to GCS"]
 
@@ -120,6 +140,7 @@ steps:
       - "PROJECT=$PROJECT_ID"
       - "REGION=us-central1"
       - "GCS_LOCATION=gs://$PROJECT_ID"
+    dir: "mle-taxi-fare-prediction"
     id: "Compile Pipeline"
     #  waitFor: ['Local Test E2E Pipeline']
     waitFor: ["Build cicd image"]
@@ -132,6 +153,7 @@ steps:
         "./chicago-vertex-pipelines_pipeline.json",
         "gs://$PROJECT_ID/pipeline_root/$_PIPELINE_NAME/$_PIPELINE_NAME.json",
       ]
+    dir: "mle-taxi-fare-prediction"
     id: "Upload Pipeline to GCS"
     waitFor: ["Compile Pipeline"]
 
@@ -146,7 +168,7 @@ steps:
         "--pipeline-name",
         "$_PIPELINE_NAME",
       ]
-    # dir: "mle-taxi-fare-prediction"
+    dir: "mle-taxi-fare-prediction"
     env:
       - "PROJECT=$PROJECT_ID"
       - "REGION=us-central1"
