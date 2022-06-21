@@ -27,13 +27,14 @@ steps:
         "build/.",
       ]
     id: "Build cicd image"
+
   # Run model unit tests.
   - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/cicd:latest'
     entrypoint: 'pytest'
     args: [ 'src/tests/model_tests.py', '-s' ]
 #    dir: 'mlops-with-vertex-ai'
     id: 'Unit Test Model'
-#    waitFor: [ 'Clone Repository' ]
+    waitFor: ["Build cicd image"]
     timeout: 1800s
 
 # Test e2e pipeline using local runner.
@@ -54,6 +55,7 @@ steps:
     id: 'Local Test E2E Pipeline'
     waitFor: ['Unit Test Model']
     timeout: 1800s
+
   # Build the image that encapsulates the pipeline.
   - name: "gcr.io/cloud-builders/docker"
     args:
@@ -64,7 +66,7 @@ steps:
         ".",
       ]
     id: "Build TFX Image"
-     waitFor: [ 'Local Test E2E Pipeline']
+    waitFor: ['Local Test E2E Pipeline']
 
   - name: "gcr.io/cloud-builders/gsutil"
     args:
