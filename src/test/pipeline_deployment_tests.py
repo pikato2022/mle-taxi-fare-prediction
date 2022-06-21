@@ -17,17 +17,10 @@ import sys
 import os
 from tfx.orchestration.local.local_dag_runner import LocalDagRunner
 import tensorflow as tf
-from ml_metadata.proto import metadata_store_pb2
 import logging
 
-from src.tfx_pipelines import config
-from src.tfx_pipelines import training_pipeline
-
-root = logging.getLogger()
-root.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.INFO)
-root.addHandler(handler)
+from src.pipeline import config
+from src.pipeline import pipeline
 
 MLMD_SQLLITE = "mlmd.sqllite"
 NUM_EPOCHS = 1
@@ -37,52 +30,32 @@ HIDDEN_UNITS = "128,128"
 
 
 def test_e2e_pipeline():
+    project = os.getenv("PIPELINE_NAME")
+    pipeline_name = os.getenv("PIPELINE_NAME")
+    gcs_location = config.GCS_BUCKET_NAME
+    assert project, "Environment variable PIPELINE_NAME is None!"
+    assert pipeline_name, "Environment variable PIPELINE_NAME is None!"
 
-    project = os.getenv("PROJECT")
-    region = os.getenv("REGION")
-    model_display_name = os.getenv("MODEL_DISPLAY_NAME")
-    dataset_display_name = os.getenv("DATASET_DISPLAY_NAME")
-    gcs_location = os.getenv("GCS_LOCATION")
-    model_registry = os.getenv("MODEL_REGISTRY_URI")
-    upload_model = os.getenv("UPLOAD_MODEL")
+    # if tf.io.gfile.exists(gcs_location):
+    #     tf.io.gfile.rmtree(gcs_location)
+    # logging.info(f"Pipeline e2e test artifacts stored in: {gcs_location}")
 
-    assert project, "Environment variable PROJECT is None!"
-    assert region, "Environment variable REGION is None!"
-    assert dataset_display_name, "Environment variable DATASET_DISPLAY_NAME is None!"
-    assert model_display_name, "Environment variable MODEL_DISPLAY_NAME is None!"
-    assert gcs_location, "Environment variable GCS_LOCATION is None!"
-    assert model_registry, "Environment variable MODEL_REGISTRY_URI is None!"
-
-    logging.info(f"upload_model: {upload_model}")
-    if tf.io.gfile.exists(gcs_location):
-        tf.io.gfile.rmtree(gcs_location)
-    logging.info(f"Pipeline e2e test artifacts stored in: {gcs_location}")
-
-    if tf.io.gfile.exists(MLMD_SQLLITE):
-        tf.io.gfile.remove(MLMD_SQLLITE)
-
-    metadata_connection_config = metadata_store_pb2.ConnectionConfig()
-    metadata_connection_config.sqlite.filename_uri = MLMD_SQLLITE
-    metadata_connection_config.sqlite.connection_mode = 3
-    logging.info("ML metadata store is ready.")
-
-    pipeline_root = os.path.join(
-        config.ARTIFACT_STORE_URI,
-        config.PIPELINE_NAME,
-    )
+    pipeline_root = config.PIPELINE_ROOT
 
     runner = LocalDagRunner()
-
-    pipeline = training_pipeline.create_pipeline(
-        pipeline_root=pipeline_root,
-        num_epochs=NUM_EPOCHS,
-        batch_size=BATCH_SIZE,
-        learning_rate=LEARNING_RATE,
-        hidden_units=HIDDEN_UNITS,
-        metadata_connection_config=metadata_connection_config,
-    )
+    _trainer_module_file = 'trainer.py'
+    pipeline = pipeline._create_pipeline(
+        pipeline_name=pl,
+        pipeline_root=config.PIPELINE_ROOT,
+        data_root=config.DATA_ROOT,
+        module_file=os.path.join(config.MODULE_ROOT, _trainer_module_file),
+        endpoint_name=config.ENDPOINT_NAME,
+        project_id=config.GOOGLE_CLOUD_PROJECT,
+        region=config.GOOGLE_CLOUD_REGION,
+        use_gpu=False,
+        serving_model_dir=config.SERVING_MODEL_DIR)
 
     runner.run(pipeline)
 
-    logging.info(f"Model output: {os.path.join(model_registry, model_display_name)}")
-    assert tf.io.gfile.exists(os.path.join(model_registry, model_display_name))
+    logging.info(f"Model output: {'gs://' + project + '/best_model'}")
+    assert tf.io.gfile.exists('gs://' + project + '/best_model')

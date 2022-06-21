@@ -41,3 +41,6 @@ print(DATA_ROOT)
 SERVING_MODEL_DIR = 'gs://{}/serving_model/{}'.format(
     GCS_BUCKET_NAME, PIPELINE_NAME)
 print(SERVING_MODEL_DIR)
+
+os.environ["GOOGLE_CLOUD_PROJECT"] = PROJECT
+os.environ["PIPELINE_NAME"] = PIPELINE_NAME

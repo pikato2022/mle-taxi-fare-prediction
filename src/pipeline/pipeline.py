@@ -127,7 +127,6 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
         examples=transform.outputs['transformed_examples'],
         transform_graph=transform.outputs['transform_graph'],
         base_model = tuner_custom.outputs['model'],
-        # schema=schema_gen.outputs['schema'],
         train_args=tfx.proto.TrainArgs(num_steps=1600), #66k/128
         eval_args=tfx.proto.EvalArgs(num_steps=1600), #34k/64
         custom_config={
@@ -244,8 +243,6 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
         schema_gen,
         example_validator,
         transform,
-        # tuner,
-        # trainer,
         tuner_custom,
         trainer_vertex,
         model_resolver,
