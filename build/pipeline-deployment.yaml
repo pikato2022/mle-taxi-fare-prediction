@@ -17,22 +17,6 @@
 #############################################################################
 
 steps:
-  # Clone the repository.
-
-  # - name: "gcr.io/cloud-builders/git"
-  #   args:
-  #     [
-  #       "clone",
-  #       "--single-branch",
-  #       "--branch",
-  #       "$_BRANCH_NAME",
-  #       "$_REPO_GIT",
-  #       "--depth",
-  #       "1",
-  #       "--verbose",
-  #     ]
-  #   id: "Clone Repository"
-
   # Build the image that encapsulates the pipeline.
   - name: "gcr.io/cloud-builders/docker"
     args:
@@ -50,11 +34,33 @@ steps:
     args:
       [
         "cp",
-        "src/pipeline/trainer.py",
-        "gs://$PROJECT_ID/pipeline_module/$_PIPELINE_NAME/trainer.py",
+        "src/pipeline/trainer_transform.py",
+        "gs://$PROJECT_ID/pipeline_module/$_PIPELINE_NAME/trainer_transform.py",
       ]
-    id: "Upload trainer to GCS"
+    id: "Upload transform to GCS"
     waitFor: ["Build TFX Image"]
+
+  # push to registry tuner
+  - name: "gcr.io/cloud-builders/gsutil"
+    args:
+      [
+        "cp",
+        "src/pipeline/trainer_tune.py",
+        "gs://$PROJECT_ID/pipeline_module/$_PIPELINE_NAME/trainer_tune.py",
+      ]
+    id: "Upload tuner to GCS"
+    waitFor: ["Upload transform to GCS"]
+
+  # push to registry vertex
+  - name: "gcr.io/cloud-builders/gsutil"
+    args:
+      [
+        "cp",
+        "src/pipeline/trainer_vertex.py",
+        "gs://$PROJECT_ID/pipeline_module/$_PIPELINE_NAME/trainer_vertex.py",
+      ]
+    id: "Upload vertex to GCS"
+    waitFor: ["Upload tuner to GCS"]
 
   # build cicd image
   - name: "gcr.io/cloud-builders/docker"
@@ -66,7 +72,7 @@ steps:
         "build/.",
       ]
     id: "Build cicd image"
-    waitFor: ["Upload trainer to GCS"]
+    waitFor: ["Upload vertex to GCS"]
 
   # Compile the pipeline.
   - name: "us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/cicd:latest"
@@ -79,7 +85,7 @@ steps:
         "--pipeline-name",
         "$_PIPELINE_NAME",
       ]
-    dir: "mle-taxi-fare-prediction"
+    # dir: "mle-taxi-fare-prediction"
     env:
       - "PROJECT=$PROJECT_ID"
       - "REGION=us-central1"
@@ -110,6 +116,7 @@ steps:
         "--pipeline-name",
         "$_PIPELINE_NAME",
       ]
+    # dir: "mle-taxi-fare-prediction"
     env:
       - "PROJECT=$PROJECT_ID"
       - "REGION=us-central1"
