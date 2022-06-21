@@ -22,18 +22,12 @@ import logging
 from src.pipeline import config
 from src.pipeline import pipeline
 
-MLMD_SQLLITE = "mlmd.sqllite"
-NUM_EPOCHS = 1
-BATCH_SIZE = 512
-LEARNING_RATE = 0.001
-HIDDEN_UNITS = "128,128"
-
 
 def test_e2e_pipeline():
-    project = os.getenv("PIPELINE_NAME")
+    project = os.getenv("GOOGLE_CLOUD_PROJECT")
     pipeline_name = os.getenv("PIPELINE_NAME")
     gcs_location = config.GCS_BUCKET_NAME
-    assert project, "Environment variable PIPELINE_NAME is None!"
+    assert project, "Environment variable GOOGLE_CLOUD_PROJECT is None!"
     assert pipeline_name, "Environment variable PIPELINE_NAME is None!"
 
     # if tf.io.gfile.exists(gcs_location):
@@ -45,7 +39,7 @@ def test_e2e_pipeline():
     runner = LocalDagRunner()
     _trainer_module_file = 'trainer.py'
     pipeline = pipeline._create_pipeline(
-        pipeline_name=pl,
+        pipeline_name=pipeline_name,
         pipeline_root=config.PIPELINE_ROOT,
         data_root=config.DATA_ROOT,
         module_file=os.path.join(config.MODULE_ROOT, _trainer_module_file),

@@ -56,7 +56,6 @@ steps:
   - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/cicd:latest'
     entrypoint: 'pytest'
     args: ['src/tests/pipeline_deployment_tests.py::test_e2e_pipeline', '-s']
-  #  dir: 'mlops-with-vertex-ai'
     env:
   #  - 'PROJECT=$_PROJECT'
   #  - 'REGION=$_REGION'

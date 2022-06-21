@@ -17,7 +17,6 @@ import sys
 import logging
 import tensorflow as tf
 
-from src.common import features
 from src.pipeline import trainer_tune
 
 root = logging.getLogger()
