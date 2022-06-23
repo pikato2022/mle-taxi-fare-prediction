@@ -21,7 +21,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
         'project': project_id,
         'worker_pool_specs': [{
             'machine_spec': {
-                'machine_type': 'e2-standard-8',
+                'machine_type': 'e2-standard-16',
             },
             'replica_count': 1,
             'container_spec': {
@@ -53,7 +53,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
     ########################################
     #03 generate the schema
     ########################################
-    schema_gen = tfx.components.SchemaGen(statistics=statistics_gen.outputs['statistics'],infer_feature_shape=False)
+    schema_gen = tfx.components.SchemaGen(statistics=statistics_gen.outputs['statistics'],infer_feature_shape=True)
     
     ########################################
     #04 components to validate the examples
@@ -67,13 +67,16 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
                                          schema=schema_gen.outputs['schema'],module_file=module_file[:-3]+'_transform.py')
     
     
-    # # tuner component      
-    # tuner = tfx.components.Tuner(
-    #     module_file=module_file,
-    #     examples=transform.outputs['transformed_examples'],
-    #     transform_graph=transform.outputs['transform_graph'],
-    #     train_args=tfx.proto.TrainArgs(num_steps=1600),
-    #     eval_args=tfx.proto.EvalArgs(num_steps=1600),)
+    ########################################
+    #06 Lucky Tuner
+    ########################################    
+    # tuner component      
+    tuner = tfx.components.Tuner(
+        module_file=module_file[:-3]+'_tune.py',
+        examples=example_gen.outputs['examples'],
+        schema=schema_gen.outputs['schema'],
+        train_args=tfx.proto.TrainArgs(num_steps=1600),
+        eval_args=tfx.proto.EvalArgs(num_steps=1600),) 
     
     
     # Trains a model using Vertex AI Training.
@@ -100,36 +103,37 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
     ########################################
     #06 pseudo custom component modified from standard trainer component for tuning purposes 
     ########################################
-    tuner_custom = tfx.components.Trainer(
-        module_file=module_file[:-3]+'_tune.py',
-        examples=transform.outputs['transformed_examples'],
-        transform_graph=transform.outputs['transform_graph'],
-        schema=schema_gen.outputs['schema'],
-        train_args=tfx.proto.TrainArgs(num_steps=1600), #66k/128
-        eval_args=tfx.proto.EvalArgs(num_steps=1600),).with_id('Tuner Custom') #34k/64
-        # custom_config={
-        #     tfx.extensions.google_cloud_ai_platform.ENABLE_VERTEX_KEY:
-        #         True,
-        #     tfx.extensions.google_cloud_ai_platform.VERTEX_REGION_KEY:
-        #         region,
-        #     tfx.extensions.google_cloud_ai_platform.TRAINING_ARGS_KEY:
-        #         vertex_job_spec,
-        #     'use_gpu':
-        #         use_gpu,
-        # })
+    # tuner_custom = tfx.components.Trainer(
+    #     module_file=module_file[:-3]+'_tune.py',
+    #     examples=example_gen.outputs['examples'],
+    #     # transform_graph=transform.outputs['transform_graph'],
+    #     schema=schema_gen.outputs['schema'],
+    #     train_args=tfx.proto.TrainArgs(num_steps=1600), #66k/128
+    #     eval_args=tfx.proto.EvalArgs(num_steps=1600),).with_id('Tuner_Custom') #34k/64
+    #     # custom_config={
+    #     #     tfx.extensions.google_cloud_ai_platform.ENABLE_VERTEX_KEY:
+    #     #         True,
+    #     #     tfx.extensions.google_cloud_ai_platform.VERTEX_REGION_KEY:
+    #     #         region,
+    #     #     tfx.extensions.google_cloud_ai_platform.TRAINING_ARGS_KEY:
+    #     #         vertex_job_spec,
+    #     #     'use_gpu':
+    #     #         use_gpu,
+    #     # })  
         
     ########################################
     #07 submit job to vertex training 
     ########################################
+    # using the watmstart strategy 
+    # https://github.com/tensorflow/tfx/issues/3423
     # trainer_vertex = tfx.components.Trainer(
     trainer_vertex = tfx.extensions.google_cloud_ai_platform.Trainer(
         module_file=module_file[:-3]+'_vertex.py',
-        examples=transform.outputs['transformed_examples'],
-        transform_graph=transform.outputs['transform_graph'],
-        base_model = tuner_custom.outputs['model'],
-        # schema=schema_gen.outputs['schema'],
-        train_args=tfx.proto.TrainArgs(num_steps=1600), #66k/128
-        eval_args=tfx.proto.EvalArgs(num_steps=1600), #34k/64
+        examples=example_gen.outputs['examples'],
+        schema=schema_gen.outputs['schema'],
+        hyperparameters=tuner.outputs['best_hyperparameters'],
+        train_args=tfx.proto.TrainArgs(num_steps=1600), #66k/128 1600
+        eval_args=tfx.proto.EvalArgs(num_steps=1600), #34k/64 1600
         custom_config={
             tfx.extensions.google_cloud_ai_platform.ENABLE_VERTEX_KEY:
                 True,
@@ -139,7 +143,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
                 vertex_job_spec,
             'use_gpu':
                 use_gpu,
-        }).with_id('Trainer Vertex')
+        }).with_id('Trainer_Vertex')
     
     ########################################
     # 08 resolver to find the latest blessed model
@@ -153,13 +157,13 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
           type=tfx.types.standard_artifacts.ModelBlessing)).with_id(
               'latest_blessed_model_resolver')
 
-    
+    ########################################
+    # 09 evaluator component 
+    ########################################
     # Eval component      
     accuracy_threshold = tfma.MetricThreshold(
-                value_threshold=tfma.GenericValueThreshold(
-                    lower_bound={'value': 1.0},
-                    upper_bound={'value': 4.0})
-                )
+            value_threshold=tfma.GenericValueThreshold(lower_bound={'value':1.0},upper_bound={'value':3.5}),
+            change_threshold=tfma.GenericChangeThreshold(absolute={'value':0.6},direction=tfma.MetricDirection.LOWER_IS_BETTER))
 
     metrics_specs = tfma.MetricsSpec(
                    metrics = [
@@ -167,17 +171,19 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
                            threshold=accuracy_threshold),
                        tfma.MetricConfig(class_name='MeanSquaredError')])
 
-    eval_config = tfma.EvalConfig(model_specs=[tfma.ModelSpec(label_key='trip_total')], metrics_specs=[metrics_specs], slicing_specs=[tfma.SlicingSpec()])
+    eval_config = tfma.EvalConfig(model_specs=[tfma.ModelSpec(label_key='trip_total')], 
+                                  metrics_specs=[metrics_specs], 
+                                  slicing_specs=[tfma.SlicingSpec(),
+                                                tfma.SlicingSpec(feature_keys=['monday']),
+                                                tfma.SlicingSpec(feature_keys=['tuesday']),])
     
-    ########################################
-    # 09 evaluator component 
-    ########################################
     model_analyzer = tfx.components.Evaluator(
+        # examples=example_gen.outputs['examples'],
         examples=example_gen.outputs['examples'],
         model=trainer_vertex.outputs['model'],
         eval_config=eval_config,
-        # baseline_model=trainer.outputs['model'],
-        baseline_model=model_resolver.outputs['model'],)
+        baseline_model=model_resolver.outputs['model'],
+        )
     
     ########################################
     # 10 Pushes the model to a filesystem destination.
@@ -232,7 +238,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
         push_destination=tfx.proto.PushDestination(
         filesystem=tfx.proto.PushDestination.Filesystem(
         # base_directory=serving_model_dir))).with_id('Pusher Local')
-        base_directory= 'gs://' + project_id +'/best_model'))).with_id('Pusher Local')
+        base_directory= 'gs://' + project_id +'/best_model'))).with_id('Pusher_Local')
 
     ########################################
     # 12 Select the components you want to activate
@@ -243,10 +249,9 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
         statistics_gen,
         schema_gen,
         example_validator,
-        transform,
-        # tuner,
-        # trainer,
-        tuner_custom,
+        tuner,
+        ## transform,
+        ## tuner_custom,
         trainer_vertex,
         model_resolver,
         model_analyzer,

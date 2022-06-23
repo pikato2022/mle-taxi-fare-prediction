@@ -33,7 +33,7 @@ MODULE_ROOT = 'gs://{}/pipeline_module/{}'.format(
 print(MODULE_ROOT)
 
 # Paths for input data.
-DATA_ROOT = 'gs://{}/data/{}'.format(GCS_BUCKET_NAME, PIPELINE_NAME)
+DATA_ROOT = 'gs://{}/datas/{}'.format(GCS_BUCKET_NAME, PIPELINE_NAME)
 print(DATA_ROOT)
 
 # This is the path where your model will be pushed for serving.
