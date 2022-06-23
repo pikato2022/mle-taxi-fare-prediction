@@ -56,25 +56,36 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
     schema_gen = tfx.components.SchemaGen(statistics=statistics_gen.outputs['statistics'],infer_feature_shape=True)
     
     ########################################
-    #04 components to validate the examples
+    #04 import the schema
     ########################################
-    example_validator = tfx.components.ExampleValidator(statistics=statistics_gen.outputs['statistics'],schema=schema_gen.outputs['schema'])
+    ImportSchemaGen = tfx.components.ImportSchemaGen(schema_file=config.DATA_ROOT[:-30]+'user_area/schema.pbtxt')
+    
+    #######################################
+    # 05 choose the schema 
+    schema_choice = ImportSchemaGen.outputs['schema']
+    # schema_choice = schema_gen.outputs['schema']
+    #######################################
     
     ########################################
-    #05 components to transform the examples
+    #06 components to validate the examples
+    ########################################
+    example_validator = tfx.components.ExampleValidator(statistics=statistics_gen.outputs['statistics'],schema=schema_choice)
+    
+    ########################################
+    #07 components to transform the examples
     ########################################
     transform = tfx.components.Transform(examples=example_gen.outputs['examples'],
                                          schema=schema_gen.outputs['schema'],module_file=module_file[:-3]+'_transform.py')
     
     
     ########################################
-    #06 Lucky Tuner
+    #08 Lucky Tuner
     ########################################    
     # tuner component      
     tuner = tfx.components.Tuner(
         module_file=module_file[:-3]+'_tune.py',
         examples=example_gen.outputs['examples'],
-        schema=schema_gen.outputs['schema'],
+        schema=schema_choice,
         train_args=tfx.proto.TrainArgs(num_steps=1600),
         eval_args=tfx.proto.EvalArgs(num_steps=1600),) 
     
@@ -101,7 +112,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
         # })
         
     ########################################
-    #06 pseudo custom component modified from standard trainer component for tuning purposes 
+    #08 pseudo custom component modified from standard trainer component for tuning purposes 
     ########################################
     # tuner_custom = tfx.components.Trainer(
     #     module_file=module_file[:-3]+'_tune.py',
@@ -122,7 +133,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
     #     # })  
         
     ########################################
-    #07 submit job to vertex training 
+    #09 submit job to vertex training 
     ########################################
     # using the watmstart strategy 
     # https://github.com/tensorflow/tfx/issues/3423
@@ -130,7 +141,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
     trainer_vertex = tfx.extensions.google_cloud_ai_platform.Trainer(
         module_file=module_file[:-3]+'_vertex.py',
         examples=example_gen.outputs['examples'],
-        schema=schema_gen.outputs['schema'],
+        schema=schema_choice,
         hyperparameters=tuner.outputs['best_hyperparameters'],
         train_args=tfx.proto.TrainArgs(num_steps=1600), #66k/128 1600
         eval_args=tfx.proto.EvalArgs(num_steps=1600), #34k/64 1600
@@ -146,7 +157,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
         }).with_id('Trainer_Vertex')
     
     ########################################
-    # 08 resolver to find the latest blessed model
+    # 10 resolver to find the latest blessed model
     # if the latest blessed model doesn not exist, the component will ignore and auto bless current model     
     # NEW: RESOLVER Get the latest blessed model for Evaluator.
     ########################################
@@ -158,7 +169,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
               'latest_blessed_model_resolver')
 
     ########################################
-    # 09 evaluator component 
+    # 11 evaluator component 
     ########################################
     # Eval component      
     accuracy_threshold = tfma.MetricThreshold(
@@ -186,7 +197,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
         )
     
     ########################################
-    # 10 Pushes the model to a filesystem destination.
+    # 12 Pushes the model to a vertex endpoint 
     ########################################
     # NEW: Configuration for pusher.
     vertex_serving_spec = {
@@ -230,7 +241,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
         }).with_id('Pusher Vertex')
     
     ########################################
-    # 11 Pushes the model to a filesystem destination.
+    # 13 Pushes the model to a filesystem destination.
     ########################################
     pusher_local = tfx.components.Pusher(
         model=trainer_vertex.outputs['model'],
@@ -238,25 +249,27 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
         push_destination=tfx.proto.PushDestination(
         filesystem=tfx.proto.PushDestination.Filesystem(
         # base_directory=serving_model_dir))).with_id('Pusher Local')
-        base_directory= 'gs://' + project_id +'/best_model'))).with_id('Pusher_Local')
+        base_directory= 'gs://' + project_id +'/user_area/best_model'))).with_id('Pusher_Local')
 
     ########################################
-    # 12 Select the components you want to activate
+    # 14 Select the components you want to activate
     ########################################
     # Following three components will be included in the pipeline.
     components = [
         example_gen,
         statistics_gen,
         schema_gen,
+        ImportSchemaGen,
         example_validator,
         tuner,
-        ## transform,
-        ## tuner_custom,
         trainer_vertex,
         model_resolver,
         model_analyzer,
-        pusher_local,
+        # pusher_local,
         pusher_vertex,
+        
+        ## transform,
+        ## tuner_custom,
     ]
 
     return tfx.dsl.Pipeline(
