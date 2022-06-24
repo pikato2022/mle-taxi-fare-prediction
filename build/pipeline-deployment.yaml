@@ -46,7 +46,7 @@ steps:
     id: "Build TFX Image"
     waitFor: ["Clone Repository"]
 
-    - name: "gcr.io/cloud-builders/docker"
+  - name: "gcr.io/cloud-builders/docker"
     args:
       [
         "build",
@@ -57,6 +57,7 @@ steps:
     dir: "mle-taxi-fare-prediction"
     id: "Build cicd image"
     waitFor: ["Build TFX Image"]
+    
   # Run model unit tests.
   - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/cicd:latest'
     entrypoint: 'pytest'
