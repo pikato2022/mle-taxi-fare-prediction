@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """TFX pipeline configurations."""
-
+import os
 
 PIPELINE_NAME = 'chicago-vertex-pipelines'
 # GOOGLE_CLOUD_PROJECT = 'mle-chicago-taxi-trip'     # <--- ENTER THIS
