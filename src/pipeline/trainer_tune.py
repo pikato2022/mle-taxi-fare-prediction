@@ -139,7 +139,7 @@ def _get_distribution_strategy(fn_args: tfx.components.FnArgs):
     return None
 
 
-# main function block 
+# main function block PLEASE IGNORE THIS SESSION
 ####################################################################
 # TFX Trainer  tfx.components.Trainer will call this function.
 def run_fn(fn_args: tfx.components.FnArgs):
@@ -269,7 +269,7 @@ def tuner_fn(fn_args: tfx.components.FnArgs) -> TunerFnResult:
     # BayesianOptimization is a subclass of kerastuner.Tuner which inherits from BaseTuner.    
     tuner = keras_tuner.RandomSearch(
         build_keras_model_fn,
-        max_trials=5,
+        max_trials=10,
         hyperparameters=_get_hyperparameters(),
       # New entries allowed for n_units hyperparameter construction conditional on n_layers selected.
 #       allow_new_entries=True,

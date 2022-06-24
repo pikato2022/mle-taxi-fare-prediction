@@ -62,8 +62,8 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
     
     #######################################
     # 05 choose the schema 
-    schema_choice = ImportSchemaGen.outputs['schema']
-    # schema_choice = schema_gen.outputs['schema']
+    # schema_choice = ImportSchemaGen.outputs['schema']
+    schema_choice = schema_gen.outputs['schema']
     #######################################
     
     ########################################
@@ -86,8 +86,8 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
         module_file=module_file[:-3]+'_tune.py',
         examples=example_gen.outputs['examples'],
         schema=schema_choice,
-        train_args=tfx.proto.TrainArgs(num_steps=1600),
-        eval_args=tfx.proto.EvalArgs(num_steps=1600),) 
+        train_args=tfx.proto.TrainArgs(num_steps=3200),
+        eval_args=tfx.proto.EvalArgs(num_steps=3200),) 
     
     
     # Trains a model using Vertex AI Training.
@@ -143,8 +143,8 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
         examples=example_gen.outputs['examples'],
         schema=schema_choice,
         hyperparameters=tuner.outputs['best_hyperparameters'],
-        train_args=tfx.proto.TrainArgs(num_steps=1600), #66k/128 1600
-        eval_args=tfx.proto.EvalArgs(num_steps=1600), #34k/64 1600
+        train_args=tfx.proto.TrainArgs(num_steps=3200), #66k/128 1600
+        eval_args=tfx.proto.EvalArgs(num_steps=3200), #34k/64 1600
         custom_config={
             tfx.extensions.google_cloud_ai_platform.ENABLE_VERTEX_KEY:
                 True,
@@ -185,8 +185,9 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
     eval_config = tfma.EvalConfig(model_specs=[tfma.ModelSpec(label_key='trip_total')], 
                                   metrics_specs=[metrics_specs], 
                                   slicing_specs=[tfma.SlicingSpec(),
-                                                tfma.SlicingSpec(feature_keys=['monday']),
-                                                tfma.SlicingSpec(feature_keys=['tuesday']),])
+                                                # tfma.SlicingSpec(feature_keys=['monday']),
+                                                # tfma.SlicingSpec(feature_keys=['tuesday']),
+                                                ])
     
     model_analyzer = tfx.components.Evaluator(
         # examples=example_gen.outputs['examples'],
