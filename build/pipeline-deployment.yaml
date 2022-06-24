@@ -46,7 +46,7 @@ steps:
   # Run model unit tests.
   - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/cicd:latest'
     entrypoint: 'pytest'
-    args: [ 'src/tests/model_tests.py', '-s' ]
+    args: [ '-s', 'src/tests/model_tests.py' ]
     dir: "mle-taxi-fare-prediction"
     id: 'Unit Test Model'
     waitFor: ["Build cicd image"]
