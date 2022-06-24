@@ -29,3 +29,7 @@ EXPECTED_HYPERPARAMS_KEYS = [
 def test_hyperparams_defaults():
     hyperparams = trainer_tune._get_hyperparameters()
     assert set(hyperparams.keys()) == set(EXPECTED_HYPERPARAMS_KEYS)
+
+def hello_world():
+    hello = 'hello'
+    assert 'hello' == hello
