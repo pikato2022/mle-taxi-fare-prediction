@@ -173,7 +173,7 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
     ########################################
     # Eval component      
     accuracy_threshold = tfma.MetricThreshold(
-            value_threshold=tfma.GenericValueThreshold(lower_bound={'value':1.0},upper_bound={'value':3.5}),
+            value_threshold=tfma.GenericValueThreshold(lower_bound={'value':1.0},upper_bound={'value':5}),
             change_threshold=tfma.GenericChangeThreshold(absolute={'value':0.6},direction=tfma.MetricDirection.LOWER_IS_BETTER))
 
     metrics_specs = tfma.MetricsSpec(
@@ -185,8 +185,8 @@ def _create_pipeline(pipeline_name: str, pipeline_root: str, data_root: str,
     eval_config = tfma.EvalConfig(model_specs=[tfma.ModelSpec(label_key='trip_total')], 
                                   metrics_specs=[metrics_specs], 
                                   slicing_specs=[tfma.SlicingSpec(),
-                                                # tfma.SlicingSpec(feature_keys=['monday']),
-                                                # tfma.SlicingSpec(feature_keys=['tuesday']),
+                                                 tfma.SlicingSpec(feature_keys=['quarter_1', 'quarter_2', 'quarter_3', 'quarter_4']),
+                                                 tfma.SlicingSpec(feature_keys=['monday','tuesday','wednesday','thursday','friday','saturday','sunday']),
                                                 ])
     
     model_analyzer = tfx.components.Evaluator(
