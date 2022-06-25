@@ -68,23 +68,23 @@ steps:
     timeout: 1800s
 
 # Test e2e pipeline using local runner.
-  - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/cicd:latest'
-    entrypoint: 'pytest'
-    args: ['src/tests/pipeline_deployment_tests.py::test_e2e_pipeline', '-s']
-    env:
-  #  - 'PROJECT=$_PROJECT'
-  #  - 'REGION=$_REGION'
-  #  - 'MODEL_DISPLAY_NAME=$_MODEL_DISPLAY_NAME'
-  #  - 'DATASET_DISPLAY_NAME=$_DATASET_DISPLAY_NAME'
-  #  - 'GCS_LOCATION=$_TEST_GCS_LOCATION'
-  #  - 'TRAIN_LIMIT=$_CI_TRAIN_LIMIT'
-  #  - 'TEST_LIMIT=$_CI_TEST_LIMIT'
-  #  - 'UPLOAD_MODEL=$_CI_UPLOAD_MODEL'
-  #  - 'ACCURACY_THRESHOLD=$_CI_ACCURACY_THRESHOLD'
-    dir: "mle-taxi-fare-prediction"
-    id: 'Local Test E2E Pipeline'
-    waitFor: ['Unit Test Model']
-    timeout: 1800s
+#  - name: 'us-central1-docker.pkg.dev/$PROJECT_ID/mle-pipeline/cicd:latest'
+#    entrypoint: 'pytest'
+#    args: ['src/tests/pipeline_deployment_tests.py::test_e2e_pipeline', '-s']
+#    env:
+#  #  - 'PROJECT=$_PROJECT'
+#  #  - 'REGION=$_REGION'
+#  #  - 'MODEL_DISPLAY_NAME=$_MODEL_DISPLAY_NAME'
+#  #  - 'DATASET_DISPLAY_NAME=$_DATASET_DISPLAY_NAME'
+#  #  - 'GCS_LOCATION=$_TEST_GCS_LOCATION'
+#  #  - 'TRAIN_LIMIT=$_CI_TRAIN_LIMIT'
+#  #  - 'TEST_LIMIT=$_CI_TEST_LIMIT'
+#  #  - 'UPLOAD_MODEL=$_CI_UPLOAD_MODEL'
+#  #  - 'ACCURACY_THRESHOLD=$_CI_ACCURACY_THRESHOLD'
+#    dir: "mle-taxi-fare-prediction"
+#    id: 'Local Test E2E Pipeline'
+#    waitFor: ['Unit Test Model']
+#    timeout: 1800s
 
   - name: "gcr.io/cloud-builders/gsutil"
     args:
@@ -95,7 +95,7 @@ steps:
       ]
     dir: "mle-taxi-fare-prediction"
     id: "Upload transform to GCS"
-    waitFor: ['Local Test E2E Pipeline']
+    waitFor: ['Unit Test Model']
   # push to registry tuner
   - name: "gcr.io/cloud-builders/gsutil"
     args:
