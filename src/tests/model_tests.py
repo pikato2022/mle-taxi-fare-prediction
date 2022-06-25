@@ -15,9 +15,8 @@
 
 import sys
 import logging
-import tensorflow as tf
 
-from src.pipeline import trainer_tune
+# from src.pipeline import trainer_tune
 
 EXPECTED_HYPERPARAMS_KEYS = [
     "learning_rate",
