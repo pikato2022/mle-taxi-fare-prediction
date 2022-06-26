@@ -16,7 +16,7 @@
 import sys
 import logging
 
-# from src.pipeline import trainer_tune
+from src.pipeline import trainer_tune
 
 EXPECTED_HYPERPARAMS_KEYS = [
     "learning_rate",
@@ -26,9 +26,9 @@ EXPECTED_HYPERPARAMS_KEYS = [
 
 
 def test_hyperparams_defaults():
-    # hyperparams = trainer_tune._get_hyperparameters()
-    # assert set(hyperparams.keys()) == set(EXPECTED_HYPERPARAMS_KEYS)
-    pass
+    hyperparams = trainer_tune._get_hyperparameters()
+    assert set(hyperparams.keys()) == set(EXPECTED_HYPERPARAMS_KEYS)
+
 
 def hello_world():
     hello = 'hello'
