@@ -16,7 +16,7 @@
 import sys
 import logging
 
-from src.pipeline import trainer_tune
+# from src.pipeline import trainer_tune
 
 EXPECTED_HYPERPARAMS_KEYS = [
     "learning_rate",
