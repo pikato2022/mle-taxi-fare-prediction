@@ -15,7 +15,7 @@
 
 import sys
 import logging
-
+import os
 # from src.pipeline import trainer_tune
 
 EXPECTED_HYPERPARAMS_KEYS = [
@@ -31,6 +31,8 @@ def test_hyperparams_defaults():
     assert 'world' == 'world'
 
 def test_config():
+    # project = os.getenv("GOOGLE_CLOUD_PROJECT")
+    # pipeline_name = os.getenv("PIPELINE_NAME")
     # assert project, "Environment variable GOOGLE_CLOUD_PROJECT is None!"
     # assert pipeline_name, "Environment variable PIPELINE_NAME is None!"
     assert 'hello' == 'hello'
