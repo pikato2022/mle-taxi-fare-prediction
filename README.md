@@ -1,4 +1,4 @@
-# Chicgo Taxi Fare 
+# Chicago Taxi Fare 
 
 
 # 1. How to setup GCloud Project
@@ -11,7 +11,7 @@ gcloud config set project $PROJECT_ID
 
 #Enable the cloud services
 gcloud services enable \
-cloudbuild.googleapis.com \
+cloudbuild.googleapis.com \Cancel changes
 container.googleapis.com \
 cloudresourcemanager.googleapis.com \
 iam.googleapis.com \
