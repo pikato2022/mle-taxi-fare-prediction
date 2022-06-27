@@ -1,5 +1,5 @@
-# Chicago Taxi Fare 
-
+# Chicago Taxi Fare Prediction
+Machine Learning Engineering Project
 
 # 1. How to setup GCloud Project
 - Step 1: Create a new Gcloud Project
