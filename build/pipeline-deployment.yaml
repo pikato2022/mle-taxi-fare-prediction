@@ -51,7 +51,7 @@ steps:
       ]
     dir: "mle-taxi-fare-prediction"
     id: "Build TFX Image"
-    waitFor: [Unit Test Model']
+    waitFor: ['Unit Test Model']
 
   - name: "gcr.io/cloud-builders/docker"
     args:
